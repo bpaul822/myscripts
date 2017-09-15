@@ -1,0 +1,11 @@
+
+                        #if($SCLK eq  1)    {$case_variable1= $RST.$SE.$SI.$SEXP  ;}  
+                        #elsif($SCLK eq 0)  {$case_variable0= $RST.$SE.$SI.$SEXP  ;} 
+                        
+                        #if($case_variable0 ne $case_variable1){
+                        #  if($line_index % 2 == 0){;}
+                        #    #print "posedge rst,se si sexp $case_variable1  and 
+                        #    #negdge $case_variable0  not equal for line $line_index at time $words[$COL_SIG_TIM0]\n";} 
+                        #  else{;} 
+                        #    #print "Debug line_index is odd $line_index";
+                        #}

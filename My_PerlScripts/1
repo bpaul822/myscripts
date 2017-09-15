@@ -1,0 +1,48 @@
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 58, <FIP> line 1.
+Use of uninitialized value in string ne at ./one_pin_dft.pl line 62, <FIP> line 1.
+Use of uninitialized value in string ne at ./one_pin_dft.pl line 62, <FIP> line 1.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 1.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 1.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 105, <FIP> line 1.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 58, <FIP> line 2.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 58, <FIP> line 2.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 58, <FIP> line 2.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 58, <FIP> line 2.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 59, <FIP> line 2.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 59, <FIP> line 2.
+Use of uninitialized value in string ne at ./one_pin_dft.pl line 62, <FIP> line 2.
+Use of uninitialized value in string ne at ./one_pin_dft.pl line 62, <FIP> line 2.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 2.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 2.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 2.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 2.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 2.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 2.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 2.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 105, <FIP> line 2.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 105, <FIP> line 2.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 105, <FIP> line 2.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 105, <FIP> line 2.
+Use of uninitialized value in string ne at ./one_pin_dft.pl line 62, <FIP> line 3.
+Use of uninitialized value in string ne at ./one_pin_dft.pl line 62, <FIP> line 3.
+Use of uninitialized value in string ne at ./one_pin_dft.pl line 62, <FIP> line 4.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 58, <FIP> line 685645.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 58, <FIP> line 685645.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 58, <FIP> line 685645.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 58, <FIP> line 685645.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 59, <FIP> line 685645.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 59, <FIP> line 685645.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 685645.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 685645.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 685645.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 685645.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 685645.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 685645.
+Use of uninitialized value in string eq at ./one_pin_dft.pl line 78, <FIP> line 685645.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 105, <FIP> line 685645.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 105, <FIP> line 685645.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 105, <FIP> line 685645.
+Use of uninitialized value in concatenation (.) or string at ./one_pin_dft.pl line 105, <FIP> line 685645.
+Error and check the pattern line no: 1Scan Reset: ,Scan Enable: p2d_scan_in,Scan input: d2p_spi_data_out,Scan output: p2d_resetb:
+Error and check the pattern line no: 2Scan Reset: ,Scan Enable: ,Scan input: ,Scan output: :
+SI might be x x in line 3SI might be x x in line 4Error and check the pattern line no: 685645Scan Reset: ,Scan Enab
