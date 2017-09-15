@@ -1,0 +1,124 @@
+# $Id: new.cshrc.user,v 1.10 2011/08/08 18:49:35 dmeleedy Exp $
+#
+# USER CUSTOMIZATIONS:
+#
+# Put anything that you might want to customize in your .cshrc file, here
+# instead.
+#
+stty erase '^?'
+#alias more less
+#alias vi vim
+#to list files using tabs
+set filec
+set autolist
+#vncconfig -iconic
+setenv NNTPSERVER news.spd.analog.com
+
+#Check mail every 5 minutes
+#set mail = (300 ~/mailbox ~/Mail/inbox)
+
+#if ( $?version == 1 ) then                      # it's tcsh
+##
+## vi people will want to uncomment the above if, below endif, and the next line
+## in the shell hit <esc> and then start using vi commands.
+#bindkey -v
+#
+#alias ls "ls-F"
+#alias ls "ls --color=auto"
+#else						 # it's csh
+#alias ls "ls -F"
+#alias ls "ls --color=auto"
+#endif
+
+#if ( $MTYPE == "sun4sol" ) then
+#        alias df "df -k"
+#        alias ps "ps -ef"
+#else if ( $MTYPE == "sun4os4" ) then
+#        alias ps "ps -auxww"
+#endif
+
+#alias uuencode  "uuencode \!* \!* > \!*.uu"
+
+# Uncomment the next line to prevent tcsh from automatically logging you out
+#unset autologout
+
+#cad tool licencse 
+source /cad/adi/apps/adi/cicpi/gpms/gpms.cshrc
+
+######################################################cadence cshrc############################################################
+setenv CDS_LIC_FILE 5280@noiflex:5281@noiflex
+setenv LM_LICENSE_FILE $CDS_LIC_FILE 
+setenv PATH /grid/avs/install/incisiv/12.2/latest/tools/bin:$PATH
+setenv PATH /grid/sfi/farm/bin:$PATH 
+setenv PATH /ccstools/cdsind2/Software/LEC121ISR5_lnx86/bin:$PATH 
+
+set path = ($HOME/bin /bin /sbin /usr/dt/bin /usr/local/bin /grid/common/pkgs/vim/v6.3/bin /grid/common/pkgs/gcc/v4.1.2/bin /usr/sbin /util/bin  /usr/openwin/bin /grid/common/pkgs/vnc/v4/bin /grid/common/bin  $path)
+
+setenv LD_LIBRARY_PATH /grid/common/pkgs/gcc/v4.1.2/lib
+
+setenv LSF_USER_CLEARCASE TRUE
+setenv EDITOR nedit
+
+
+#display the current directory 
+set prompt = "${HOSTNAME}\[%~\]% "
+### SpyGlass BIN, Scripts and License
+#setenv PATH /grid/scp/hw/tools/atrenta/SpyGlass-5.1.0.1/SPYGLASS_HOME/bin:$PATH 
+alias aipk_read "/grid/scp/hw/tools/atrenta/atrenta_ip_kit_5.0.0_v3/scripts/aipk_read"
+alias aipk_pack "/grid/scp/hw/tools/atrenta/atrenta_ip_kit_5.0.0_v3/scripts/aipk_pack"
+alias aipk_run "/grid/scp/hw/tools/atrenta/atrenta_ip_kit_5.0.0_v3/scripts/aipk_run"
+setenv ATRENTA_IPKIT_DIR /grid/scp/hw/tools/atrenta/atrenta_ip_kit_5.0.0_v3
+setenv ATRENTA_LICENSE_FILE  2424@hornet.spd 
+### End
+### SpyGlass BIN, Scripts and License
+#setenv SPYGLASS_HOME /grid/scp/hw/tools/atrenta/SpyGlass-5.1.1/SPYGLASS_HOME
+setenv SPYGLASS_HOME /cad/adi/apps/atrenta/spyglass/5.2.1.2/SPYGLASS_HOME/ 
+setenv ATRENTA_IPKIT_DIR /grid/scp/hw/tools/atrenta/atrenta_ip_kit_5.0.0_v3
+setenv PATH $SPYGLASS_HOME/bin:$PATH 
+## AIPK scripts
+alias aipk_read "$ATRENTA_IPKIT_DIR/scripts/aipk_read"
+alias aipk_pack "$ATRENTA_IPKIT_DIR/scripts/aipk_pack"
+alias aipk_run "$ATRENTA_IPKIT_DIR/scripts/aipk_run"
+##Alias for SpyGlass HTML Help and License query
+#alias sghelp "firefox $SPYGLASS_HOME/htmlhelp/index.html &"
+alias sglic "lmstat -c $ATRENTA_LICENSE_FILE -a"
+alias sghelp "firefox file:///cad/adi/apps/atrenta/spyglass/5.2.1.2/SPYGLASS_HOME/htmlhelp/index.html &"
+### End
+#ncverilog help 
+#ncverilog -helpall 
+
+#rhel 6 updates 
+alias rsh "ssh -X \!:* ; cd ."
+alias rlogin "ssh -X \!:* ; cd ."
+
+#source /proj/ada4575/sos_bpaul/project.cfg
+source ~/.alias
+umask 022
+#ST   $cwd;set prompt = "%B${HOST}: $cwd:h:h:h:t/$cwd:h:h:t/$cwd:h:t/$cwd:t>%b "'
+#  else
+#       set prompt = "%B${HOST}: $cwd:h:h:h:t/$cwd:h:h:t/$cwd:h:t/$cwd:t>%b "
+#       alias cd     'set old2=$old;set old=$cwd;chdir \!*;pwd;set prompt = "${HOST}: $cwd:h:h:h:t/$cwd:h:h:t/$cwd:h:t/$cwd:t> "'
+#  endif
+#endif
+#ST    $cwd'
+#----------------------------------------------------------------
+limit coredumpsize 0
+setenv PATH /home/bpaul/bin:$PATH 
+setenv dbb /proj/trx_mban/bpaul/svn/top_digital/blocks/dbb/
+
+#----------------------------------------------------------------
+# create display variable buffer
+if (! -f ~/.DISPLAY) then
+    echo $DISPLAY | sed -e "s/^[^:]*\(:.*\)/$HOST\1/g" > ~/.DISPLAY
+endif
+unset autologout
+
+if ( $?prompt ) then
+  set history=100
+endif
+
+#----------------------------------------------------------------if ( $?TERM ) then    
+setenv old  $PWD
+#  if ( $TERM == xterm || $TERM == dtterm) then
+#       set prompt = "%B${HOST}: $cwd:h:h:h:t/$cwd:h:h:t/$cwd:h:t/$cwd:t>%b "
+#       alias cd     'set old2=$old;set old=$cwd;chdir \!*;pwd;echo -n "
