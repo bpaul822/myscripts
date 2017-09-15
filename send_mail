@@ -1,0 +1,29 @@
+#!/bin/bash
+# email subject
+SUBJECT="Attachement"
+# email To
+EMAIL_TO="bibin.paul@analog.com,bibin.paul@analog.com"
+# cc to 
+CC_TO=""
+# email attachement
+#ATTACH_FILE="REPORTS/POST/CN8_20110520_SDF_PT/CN8_20110520_SDF_PT.xls"
+ATTACH_FILE="$1"
+##
+#########################################################
+##
+EMAILMESSAGE="emailmessage.txt"
+# email message write here 
+echo  "Hello $2," > $EMAILMESSAGE
+echo  " ">> $EMAILMESSAGE
+echo  "Please find mail attachement" >>  $EMAILMESSAGE
+echo  " ">> $EMAILMESSAGE
+echo  "Regards,">> $EMAILMESSAGE
+echo  "Bibin">> $EMAILMESSAGE
+# sending Email
+echo "$1"
+#mutt -s "$SUBJECT"  -a  "$ATTACH_FILE" -c "$CC_TO"  "$EMAIL_TO"  < $EMAILMESSAGE
+
+#mutt -s "$SUBJECT"   -c "$CC_TO"  "$EMAIL_TO"  < $EMAILMESSAGE
+mutt -s "$SUBJECT" -c "$CC_TO"  "$EMAIL_TO" -a "$ATTACH_FILE"  < $EMAILMESSAGE
+
+
