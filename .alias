@@ -1,0 +1,189 @@
+setenv proj /proj/ada4575/sos_bpaul/digital/
+alias win /soft/citrix/win
+##Temp alias for USB3.0
+
+alias usb1 "make UVM_TEST:=sdvt_usb_ss_pipe_w8_bulk_out_test"
+
+alias grepmod  'grep -i \!* *.v ../*.v ../../../rtl/usb3/*/*.v ../../../func/usb3/behavioural/*.v ../../../func/usb3/*.v'
+
+alias gate65 "grep -i \!* /home/ranvir/bin/TSMC_65LP.txt";
+alias gate28 "grep -i \!* /home/ranvir/bin/TSMC_28HPL.txt";
+#to check Et license usage command is as below
+#lic_status & 
+alias license "lmstat -f Affirma_sim_analysis_env -c /apps/eda/license/cadence/licFile_cadence_new;\
+               echo '------------------------------------';lmstat -f NC_Verilog_Simulator -c /apps/eda/license/cadence/licFile_cadence_new; \
+               echo '------------------------------------';lmstat -f Incisive_Enterprise_Simulator -c /apps/eda/license/cadence/licFile_cadence_new; \
+               echo '------------------------------------';lmstat -f Virtuoso_Digital_Implem -c /apps/eda/license/cadence/licFile_cadence_new; \
+               echo '------------------------------------';lmstat -f RTL_Compiler_Ultra -c /apps/eda/license/cadence/licFile_cadence_new; \
+               echo '------------------------------------';/local_home/ranvir/projects/HERMES_T28HPM/tb/usb3/vip/cur/usb/rlm/lnx_64/rlmutil rlmstat -c 5053@cosmic9 -a;"
+#vnc screen resolution
+alias hd xrandr -s 2560x1024
+alias lw xrandr -s 1280x1024
+##To check free memory on machine.
+alias mem "free -m"
+alias ali "nedit ~/.alias &"
+alias virtuoso "cds61 &"
+alias killall "bkill -u bpaul"
+alias sali "source ~/.alias"
+alias targ "grep ':' Makefile"
+alias greperr "grep -r -B 2 '*E' ncverilog.log"
+alias grepwarn "grep -r -B 2 '*W' ncverilog.log"
+alias simv "bsub simvision &"
+##Copy via ssh (other machine)
+##scp -r bibin@192.168.13.55:/local_home/bibin/svnserintf/DigRFv4/INTRA.html .
+
+##Without syntax highlighting. Use "abc" as lm (language-mode)
+alias n 'nedit -lm abc \!* &'
+##With syntax highlighting. Added verilog in nedit.highlightPatterns
+alias ne 'nedit \!* &'
+##Open file in read-only mode.
+alias nr 'nedit -read -background grey \!* &'
+
+alias pdf 'acroread \!* &'
+alias cls 'clear;pwd;ls'
+alias l "ls -lrth"
+alias l5 "ls -rtl | tail -5"
+alias l10 "ls -rtl | tail -10"
+#list only directories and nothig inside it.
+alias lsd 'ls -d */ | cut -f1 -d'/''
+alias lsl 'ls -rtl|tail -30'
+alias rmf "\rm -rf "
+alias . 'pwd'
+alias qstat   'source /opt/sge/sge6_2u5/default/common/settings.csh;/opt/sge/sge6_2u5/bin/lx24-x86/qstat'
+alias findf 'find \!* -exec ls -l {} \; | grep "^-" | grep -v "/."'
+alias psu 'ps -u bibin | grep -i \!*'
+alias psh '/bin/ps -efdl -o pcpu -o user -o nice -o pid -o stime -o time -o comm|sort -r |h'
+
+alias rshw "rsh cosmic111"
+alias lxt   'bsub -I -q interactive xterm -sl 1000 -fn Bitstream-Vera-Sans-Mono -bg darkgreen -fg black &'
+alias kt 'kill `ps | grep tail | cut -c -7`'
+alias bjob 'qstat -u bibin'
+alias bjobr 'qstat -j `qstat | grep v010 | cut -d" " -f2` | egrep "job_number|stdout_path"'
+alias top1 "prstat"
+alias bc "bc -l"
+
+alias perl_h "nedit55 /fme/users/rkumar/bin/FILES/perl.help* &"
+#disk usage depth 0 human readable
+#to display files which occupy the max area
+alias topdu "du -shx * | sort -n -r | head -n 10"
+#/net path and space by 
+#muska project space disk usage
+#df -kh . 
+#muska project space nobackup usage
+#quoto -v 
+#[‎5/‎30/‎2017 3:20 PM] Paul, Bibin: 
+#does it mean that its full ? 
+#quoto -v 
+#blrntap-nbkp.spd.analog.com:/nbkp1/bpaul
+#                   245G    500G    500G           81898   4295m   4295m  
+#                   [‎5/‎30/‎2017 3:20 PM] Gonsalves, Anand: 
+#                   no
+#                   you have 500gb /nobackup and 245gb used
+#
+#du -csh *
+#du -d 0 -h *
+#alias qota "du -khs"
+#alias quota 'du -kh \!* | egrep -P "[0-9][0-9][0-9.]+M|[0-9.]+G"'
+#alias disk "df -kh "
+#to get the netpath of a disk
+#alias net "df -k"
+#alias disk2 'du -kh /home/bibin | grep -P "\d\dM"
+#to display files larger than 5M
+#find DIR/ -type f -size +5000k
+#find ./ -maxdepth 1 -type f -size +5000k
+alias disk1 "/fme/users/rkumar/bin/disk1 "
+alias grep_exclude "grep -v"
+alias h history
+#alias rm     'rm -i'
+alias mv     'mv -i'
+alias cp     'cp -i' 
+# to remove interactive confirmation before copying/overwriting use the below alias 
+# alias cp cp -f
+##Copy Symbolic Link's content (remove the link).
+alias cpL    'cp -rL'
+##Copy as update link path. Please note that here we need to put complete path of source directory. Destination directory can be relative.
+alias cpl    'cp -rs'
+alias whois      "ypcat passwd | grep -i \!* "
+##alias diff  'perl ~/bin/diff.pl'
+##alias difft  'perl ~/bin/diff.pl \!* | grep -P -v "timescale|^\d|---"'
+alias v 'vim'
+
+#findhelp to find .sim files
+#find . "/proj/ada4575/sos_ssannala/digital/dig_impl/digital_top/" | grep ".*\.sim" | grep -v  simvision
+#find . \ -name "/proj/ada4575/sos_ssannala/digital/dig_impl/digital_top/" | grep ".*.sim"\$
+##delete svn: find . -name "\.svn" -exec \rm -rf {} \;
+
+#alias find 'find -iname'
+#find -iname "tt1p2.csv" .
+alias man_syn "man -M /fme/cae/synopsys/2004.12-SP5/doc/syn/man "
+alias man_sta "man -M /fme/cae/synopsys/2005.06-PT-SP3/doc/pt/man "
+
+#----------NCSIM
+alias ncv     'ncvlog -mess'
+alias nce     'ncelab -mess -TIMESCALE 1ps/1ps -access +rwc'
+alias ncs     'ncsim -gui'
+#vim script 
+#Now, you can run any command in Vim on multiple files, by using the argdo command. So your command turns into:
+#save the commands in vimscr and execute over A.txt,b.txt
+#use q: to open the commands and save to vimscr
+#vim -c "argdo source vimscr | w" A.txt B.txt C.txt D.txt
+alias vimproc 'vim -c "argdo source vimscr | w"' 
+#------------SVN
+alias sss 'svn status'
+alias sssv 'svn status -v'
+alias sssuv 'svn status -uv'
+#alias diff 'diff -rup'
+alias sd 'svn diff'
+alias sdt 'svn diff --diff-cmd=tkdiff'
+alias sdv 'svn diff --diff-cmd=$HOME/diffwrap.sh' #requires you to save diffwrap in home directory and make it executable
+#below is the advance version of the diffwrap script
+#example: svn diff --diff-cmd=$HOME/custom_svndiff.py env/dma_scoreboard.sv
+alias sdvg 'svn diff --diff-cmd=$HOME/custom_svndiff.py'
+#svn diff --diff-cmd=$HOME/diffwrap.sh env/dma_scoreboard.sv
+alias sc 'svn commit'
+alias sa 'svn add'
+alias sdbh 'svn diff -rBASE:HEAD'
+alias sup 'svn update'
+alias sr 'svn revert'
+alias sl 'svn log'
+alias delsvn 'find . -name ".svn" -exec rm -rf {} \;'
+
+##Get list
+alias svnls "svn ls -R"
+alias svncat "svn cat"
+alias svndiff "svn diff"
+##Non recurrcive checkout
+alias svnco "svn co -N"
+alias svnup "svn up -N"
+alias svnv 'svn st -uv'
+alias svnn 'svn st -u | grep -P "^\?"'
+alias svns 'svn st -u | grep -v -P "^\?"'
+alias svnm 'svn st -u | grep -P "^M"'
+alias svnc 'svn st -u | grep -P "^M" | grep -P "\*"'
+#this will give the lines which are different b/w 2 files irrespective of the order of occurance
+#this supports only 1 field in the file if there are more than 1 field use awk to keep only the first field
+#has been used to analyse sta reports to find extra violations present in 1 mode 
+#cat file1 | awk '{print $1}' > file1f1
+#cat file2 | awk '{print $1}' > file2f1
+#alias linediff 'awk '\''FNR==NR{a[$0]++;next}(!($0 in a))'\''' file1f1 file2f1 > diff_file2file1
+#this gives diff b/w file2f1 and file1f1
+#grep -f diff_file2file1 file2 > File_3
+alias linediff 'awk '\''FNR==NR{a[$0]++;next}(!($0 in a))'\'''
+#the above fails if there are multiple fields seperated by white space, in the case below one works.
+#diff -w file1 file2 | grep +
+#grep -f File_1 File_2 > File_3
+#above grp  command can be use to grep for field in file_1 which are present in file 2
+#below are alternatives for line diff
+#awk 'FNR==NR{a[$0]++;next}(!($0 in a))' file1 file2
+#fgrep -x -f file2 -v file1
+
+#---------------Project
+alias scrach "cd /servers/scratch03/bibin/"
+#alias digrf "cd /servers/digital_design/projects/digrfv4/verilog/"
+#alias digrf "cd /servers/digital_design/projects/digrfv4/verilog/"
+#alias digrf "cd /servers/digital_design/projects/digrfv4/verilog/"
+alias verifi "cd /servers/verification/projects/"
+
+alias mdbb "cd /proj/trx_mban/bpaul/svn/top_digital/blocks/dbb"
+alias mdbbv "cd /proj/trx_mban/bpaul/svn/top_digital/blocks/dbb/data/srr_soc_2013_lib/pan2g_srr_soc_2013_ic/VERIFICATION"
+
