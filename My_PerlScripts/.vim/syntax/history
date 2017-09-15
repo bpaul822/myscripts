@@ -1,0 +1,100 @@
+    89	22:14	vim ~/.cshrc
+    90	22:15	ll $proj/
+    91	9:31	rm -rf *.v
+    92	10:47	ll ~/*.pl
+    93	10:47	cat ~/runcheckin_status.pl
+    94	11:45	svn up
+    95	11:47	ll *bias*
+    96	11:48	vim agni_hsrx_ibias_gen.v
+    99	16:32	cd ../../../../../../AGNI_R200_S28HK/bibin/SMIC/verilog/tb/dphy
+   101	16:32	vim ../../func/ana/agni_r201_s28hk_pg1_sch/AGNI_CORE.v
+   103	19:02	cd $proj/agni_t28lp_pg1/bibin/verilog/tb/dphy/
+   107	19:12	simvision mipi_top.shm/ &
+   109	19:41	vim tb_agnit28_core.v
+   110	21:01	targ
+   114	21:08	vim /servers/digital_design/projects/agni_t28lp_pg1/bibin/verilog/func/ana/agni_t28lp_pg1_sch/agnit28_core.v
+   115	21:08	rm -rf INCA_libs/
+   117	21:09	vim Makefile
+   120	21:20	vim ncverilog.log
+   121	21:26	svn update ../../func/ana/
+   122	21:26	cd ../../func/ana/agni_t28lp_pg1_sch
+   124	21:26	ls lptx_biasgen_top.v
+   125	21:26	less lptx_biasgen_top.v
+   126	21:27	rm lptx_biasgen_top.v*
+   127	21:27	svn update
+   128	21:27	cat lptx_biasgen_top.v
+   129	21:27	cd ../../../
+   130	21:27	cd tb/dphy/
+   135	21:28	nedit Makefile
+   137	21:30	less ncverilog.log
+   138	21:31	grep -c "*W" ncverilog.log
+   139	21:31	grep -c "CSINFI" ncverilog.log
+   142	21:31	svn diff tb_agnit28_core.v
+   143	21:32	svn ci Makefile tb_agnit28_core.v -m"* Updated file lists, commenting out internal paths until we can get stable instance names"
+   146	21:32	cd func/ana/
+   149	21:45	svn revert *
+   151	21:45	mkdir port_stuff
+   152	21:45	ls *sort*
+   153	21:45	mv *sort* port_stuff/
+   156	21:46	mv emailmessage.txt tkdiff.out log port_stuff/
+   157	21:46	rm -rf INCA_libs/ ncvlog.log
+   158	21:46	pwd
+   161	21:46	ll | grep INCA
+   163	21:46	svn staus
+   165	21:46	cat send_mail
+   167	21:46	mv send_mail port_stuff/
+   169	21:46	rm temp_agni_clk_buffer.v
+   170	21:47	cat lptx_nor
+   171	21:47	cat lptx_nor.v
+   172	21:47	grep lptx_nor agnit28_core.v
+   173	21:47	grep lptx_nor agnit28_core.v_old
+   175	21:48	rm lptx_nor.v
+   179	21:49	cd ../rtl/
+   182	21:50	cd dphy/
+   184	21:50	svn diff clk_tx_dig.v
+   185	21:50	svn diff data_tx_dig.v
+   186	21:51	svn commit data_tx_dig.v -m"* Added placeholders for extra test bits"
+   189	21:51	nedit data_rx_dig.v
+   190	21:53	svn diff data_rx_dig.v
+   191	21:53	svn ci data_rx_dig.v -m"* No scan for TC"
+   193	21:53	svn diff bgap_cal_dig.v
+   194	21:53	svn revert bgap_cal_dig.v
+   196	21:53	nedit clk_tx_dig.v
+   199	21:54	svn ci clk_tx_dig.v -m"* Added placeholder test bits"
+   200	21:54	cd ..
+   204	21:55	nedit Makefile &
+   207	21:56	nedit ../../func/ana/agni_t28lp_pg1_sch/agnit28_core.v
+   208	21:57	bg
+   212	21:58	svn diff
+   213	21:58	svn ci Makefile -m"* Blocks no longer needed"
+   214	21:58	cd ../../func/ana/
+   216	21:59	cd agni_t28lp_pg1_sch
+   217	21:59	ls
+   219	21:59	svn commit -m"* Removed ports to align with the digital"
+   220	22:03	cd ../..
+   221	22:03	cd ../tb/dphy/
+   231	22:05	emacs Makefile &
+   236	22:07	make dclean
+   239	22:09	cat ncverilog.log | less
+   241	22:10	ls ../../rtl/pll/usb2_pll_fb_divider.v
+   242	22:10	grep usb2 ../../func/ana/agni_t28lp_pg1_sch/agnit28_core.v
+   246	22:12	ncverilog -helpall | less
+   248	22:12	make agnit28_core
+   249	22:14	svn status
+   252	22:15	svn diff Makefile
+   253	22:15	svn ci Makefile -m"* Timescale override for now to fix inconsistent ana models"
+   254	22:16	svn status ../../func/
+   255	22:16	svn status ../../rtl/
+   256	0:20	vim ~/.vim/syntax/log.vim
+   257	0:21	cd ~/.vim/
+   258	0:21	ll ../bu
+   260	0:22	cp bundle/syntax/ .
+   261	0:22	cp bundle/syntax/ . -rf
+   262	0:22	ll
+   263	0:22	rm -rf bundle/syntax/
+   264	0:22	ll bundle/
+   265	0:22	cd syntax/
+   266	0:22	vim log.vim
+   267	0:23	vim ../../.vimrc
+   268	9:35	history
+   269	9:37	history | tee history

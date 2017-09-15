@@ -1,0 +1,2 @@
+tcomment.vba: call delete('/home/bibin/.vim/doc/tcomment.txt    [[[1')|call delete('/home/bibin/.vim/plugin/tcomment.vim [[[1')|call delete('/home/bibin/.vim/autoload/tcomment.vim   [[[1')
+netrw.vba: call delete('/home/bibin/.vim/plugin/netrwPlugin.vim  [[[1')|call delete('/home/bibin/.vim/autoload/netrw.vim  [[[1')|call delete('/home/bibin/.vim/autoload/netrwFileHandlers.vim  [[[1')|call delete('/home/bibin/.vim/autoload/netrwSettings.vim  [[[1')|call delete('/home/bibin/.vim/doc/pi_netrw.txt    [[[1')|call delete('/home/bibin/.vim/syntax/netrw.vim    [[[1')

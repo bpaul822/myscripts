@@ -1,0 +1,5 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =3
+let g:netrw_dirhist_1='/servers/digital_design/projects/AGNI_R200_S28HK/bibin/SMIC/dotlib/FE_VIEWS/LIB'
+let g:netrw_dirhist_2='/servers/digital_design/projects/AGNI_R200_S28HK/bibin/SMIC/verilog/synth/dotlib/FE_VIEWS/VERILOG'
+let g:netrw_dirhist_3='/servers/digital_design/projects/agni_t28lp_pg1/bibin/dotlib/Release/FE_VIEWS/VERILOG'

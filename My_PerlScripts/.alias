@@ -1,0 +1,134 @@
+##Temp alias for USB30
+alias lsf "/grid/sfi/farm/bin/bsub -q interactive -R 'OSNAME==Linux && maxmem>60000 rusage[mem=10000]' 'xterm -bg black -fg white'"
+alias usb1 "make UVM_TEST:=sdvt_usb_ss_pipe_w8_bulk_out_test"
+
+##alias grepmod  'grep -i \!* *.v ../*.v ../../../rtl/usb3/*/*.v ../../../func/usb3/behavioural/*.v ../../../func/usb3/*.v'
+
+alias gate65 "grep -i \!* /home/ranvir/bin/TSMC_65LP.txt"
+alias gate28 "grep -i \!* /home/ranvir/bin/TSMC_28HPL.txt"
+alias license "lmstat -f Affirma_sim_analysis_env -c /apps/eda/license/cadence/licFile_cadence_new;\
+               echo '------------------------------------';lmstat -f NC_Verilog_Simulator -c /apps/eda/license/cadence/licFile_cadence_new; \
+               echo '------------------------------------';lmstat -f Incisive_Enterprise_Simulator -c /apps/eda/license/cadence/licFile_cadence_new; \
+               echo '------------------------------------';lmstat -f Virtuoso_Digital_Implem -c /apps/eda/license/cadence/licFile_cadence_new; \
+               echo '------------------------------------';lmstat -f RTL_Compiler_Ultra -c /apps/eda/license/cadence/licFile_cadence_new; \
+               echo '------------------------------------';/local_home/ranvir/projects/HERMES_T28HPM/tb/usb3/vip/cur/usb/rlm/lnx_64/rlmutil rlmstat -c 5053@cosmic9 -a;"
+
+##To check free memory on machine
+alias v "vim"
+alias simr "make master-slave_digrf"
+alias simc "make dclean master-slave_digrf"
+alias simv "simvision"
+alias mem "free -m"
+alias ali "nedit ~/.alias &"
+alias sali "source ~/.alias"
+alias targ  "grep ':' Makefile"
+alias greperr "grep -r -B 2 '*E' ncverilog.log"
+alias grepwarn "grep -r -B 2 '*W' ncverilog.log"
+#alias simv "simvision tb_ccdigrfv4.shm &"
+##Copy via ssh (other machine)
+
+##Without syntax highlighting. Use "abc" as lm (language-mode)
+alias n 'nedit -lm abc \!* &'
+##With syntax highlighting. Added verilog in nedit.highlightPatterns
+alias ne 'nedit \!* &'
+##Open file in read-only mode.
+alias nr 'nedit -read -background grey \!* &'
+alias whospy "lmstat -c 2710@sjtplic -a"
+
+alias pdf 'acroread \!* &'
+alias cls 'clear;pwd;ls'
+alias l "ls -lrth"
+alias l5 "ls -rtl | tail -5"
+alias l10 "ls -rtl | tail -10"
+alias lsd 'ls -F|grep /'
+alias lsl 'ls -rtl|tail -30'
+alias rmf "\rm -rf "
+alias . 'pwd'
+alias qstat   'source /opt/sge/sge6_2u5/default/common/settings.csh;/opt/sge/sge6_2u5/bin/lx24-x86/qstat'
+alias findf 'find \!* -exec ls -l {} \; | grep "^-" | grep -v "/."'
+alias psu 'ps -u bibin | grep -i \!*'
+alias psh '/bin/ps -efdl -o pcpu -o user -o nice -o pid -o stime -o time -o comm|sort -r |h'
+
+alias rshw "rsh cosmic111"
+alias lxt   'bsub -I -q interactive xterm -sl 1000 -fn Bitstream-Vera-Sans-Mono -bg darkgreen -fg black &'
+alias kt 'kill `ps | grep tail | cut -c -7`'
+alias bjob 'qstat -u bibin'
+alias bjobr 'qstat -j `qstat | grep v010 | cut -d" " -f2` | egrep "job_number|stdout_path"'
+alias top1 "prstat"
+alias bc "bc -l"
+
+alias rchelp "firefox /servers/apps/eda/cadence/SOC/current_EDI/doc/fetxtcmdref/sdcT.html"
+alias perl_h "nedit55 /fme/users/rkumar/bin/FILES/perl.help* &"
+alias qota "du -khs"
+alias quota 'du -kh \!* | egrep -P "[0-9][0-9][0-9.]+M|[0-9.]+G"'
+alias disk "df -kh "
+alias disk2 'du -kh /home/bibin | grep -P "\d\dM"'
+alias disk1 "/fme/users/rkumar/bin/disk1 "
+alias grep_exclude "grep -v"
+alias h history
+alias rm     'rm -i'
+alias mv     'mv -i'
+#alias cp     'cp -i'
+##Copy Symbolic Link's content (remove the link).
+alias cpL    'cp -rL'
+##Copy as update link path. Please note that here we need to put complete path of source directory. Destination directory can be relative.
+alias cpl    'cp -rs'
+alias whois      "ypcat passwd | grep -i \!* "
+alias diff  'perl ~/bin/diff.pl'
+alias difft  'perl ~/bin/diff.pl \!* | grep -P -v "timescale|^\d|---"'
+
+
+##delete svn: find . -name "\.svn" -exec \rm -rf {} \;
+
+
+alias man_syn "man -M /fme/cae/synopsys/2004.12-SP5/doc/syn/man "
+alias man_sta "man -M /fme/cae/synopsys/2005.06-PT-SP3/doc/pt/man "
+
+#----------NCSIM
+alias ncv     'ncvlog -mess'
+alias nce     'ncelab -mess -TIMESCALE 1ps/1ps -access +rwc'
+alias ncs     'ncsim -gui'
+
+#------------SVN
+alias ss 'svn status'
+alias ssv 'svn status -v'
+alias ssu 'svn status -u'
+alias ssuv 'svn status -uv'
+alias sd 'svn diff'
+alias sd 'svn diff'
+alias sdt 'svn diff --diff-cmd=tkdiff'
+alias sc 'svn commit'
+alias sa 'svn add'
+alias sdbh 'svn diff -rBASE:HEAD'
+alias sup 'svn update'
+alias sr 'svn revert'
+alias sl 'svn log'
+alias delsvn 'find . -name ".svn" -exec rm -rf {} \;'
+
+##Get list
+alias sl 'svn ls'
+alias svnls "svn ls -R"
+alias svncat "svn cat"
+alias svndiff "svn diff"
+##Non recurrcive checkout
+alias svnco "svn co -N"
+alias svnup "svn up -N"
+alias svnv 'svn st -uv'
+alias svnn 'svn st -u | grep -P "^\?"'
+alias svns 'svn st -u | grep -v -P "^\?"'
+alias svnm 'svn st -u | grep -P "^M"'
+alias svnc 'svn st -u | grep -P "^M" | grep -P "\*"'
+
+#---------------Project
+alias scrach "cd /servers/scratch03/bibin/"
+alias digrf "cd /servers/digital_design/projects/digrfv4/verilog/"
+alias digrf "cd /servers/digital_design/projects/digrfv4/verilog/"
+alias digrf "cd /servers/digital_design/projects/digrfv4/verilog/"
+alias verifi "cd /servers/verification/projects/"
+alias proj  "cd /servers/digital_design/projects"
+setenv proj /servers/digital_design/projects
+alias pa "ps aux | grep"
+alias pe "ps -ef  | grep"
+alias ki "kill -9"
+alias l "ls -lart"
+alias v "vim"

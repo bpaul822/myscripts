@@ -1,0 +1,727 @@
+//----------------------------------------------------------------------------//
+// Copyright (C) 2011 by Cosmic Circuits India Private Limited		      //
+//----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// PROJECT     : MIPI D-PHY in GF65LPe                                        //
+// AUTHOR      : Aravind Vijayakumar(aravind@cosmiccircuits.com)              //
+// DESCRIPTION : Master data module HS state machine                          //
+// REPOSITORY  : file:///db/mipi/code_repository                              //
+// HISTORY     : svn log $(REPOSITORY)/verilog/rtl/data_hs_m.v                //
+//----------------------------------------------------------------------------//
+
+module data_hs_m
+  // pragma protect
+  // pragma protect begin
+  (
+   RSTB,
+   TxClkHS,
+   TxByteClkHS,
+   BandCtl,
+   i_TxDataHS,
+   i_TxRequestHS,
+   o_TxReadyHS,
+   i_Enable,
+   M_StopState,
+   i_SwapDpDn,
+   //
+   // Offset Control Inputs
+   i_LP_Cnt_Offset,
+   i_HS_Prpr_Offset,
+   i_Zero_Prpr_Offset,
+   //
+   // Signals to ana
+   o_ana_TxRequest,
+   o_ana_IN,
+   o_ana_TRISTATE,
+   o_ana_HS_LP_DpB,
+   o_ana_HS_LP_DnB,
+   o_line_src,
+   o_stop_state,
+   // Test mode Signals
+   test_sel_ana_HS_LP_D,
+   test_ana_HS_LP_DpB,
+   test_ana_HS_LP_DnB,
+   test_sel_ana_IN,
+   test_sel_HSTX_data,
+   test_force_HSTX_bits,
+   i_TM_early_ready,
+   i_TM_early_offs
+   );
+   
+   input 	RSTB;  
+   input 	TxClkHS;
+   input 	TxByteClkHS;
+   input [4:0]  BandCtl;
+   input [3:0]  i_LP_Cnt_Offset;
+   input [3:0]  i_HS_Prpr_Offset;
+   input [3:0]  i_Zero_Prpr_Offset;
+      
+   input [7:0] 	i_TxDataHS;  
+   input 	i_TxRequestHS;   
+   output 	o_TxReadyHS;   
+   input 	i_Enable;
+
+   output 	o_ana_TxRequest;   
+   output 	o_ana_IN;   
+   output 	o_ana_TRISTATE;   
+   output 	o_ana_HS_LP_DpB;   
+   output 	o_ana_HS_LP_DnB;
+   output 	o_line_src;
+   output	o_stop_state;
+   input   	test_sel_ana_HS_LP_D;
+   input   	test_ana_HS_LP_DpB;
+   input   	test_ana_HS_LP_DnB;
+   input   	test_sel_ana_IN;
+   input 	test_sel_HSTX_data;
+   input [7:0] 	test_force_HSTX_bits;
+   input	M_StopState;
+   input 	i_SwapDpDn;
+   input 	i_TM_early_ready;
+   input [1:0] 	i_TM_early_offs;
+   
+   parameter 	p_t_hs_prepare = 38; // Min = 38, Max = 95
+   parameter 	p_t_hs_zero = 300 - p_t_hs_prepare; // Minimum sum = 300
+   parameter 	p_t_hs_trail = 60; // Min.
+
+   parameter 	INIT_STATE = 4'b0001;   
+   parameter 	STOP_STATE = 4'b0000;
+   parameter 	LP01_STATE = 4'b0010;
+   parameter 	LP00_STATE = 4'b0011;
+   parameter 	ZERO_STATE = 4'b0100;
+   parameter 	SOT_STATE = 4'b0101;
+   parameter 	HSTX_STATE = 4'b0111;
+   parameter 	TRL_STATE = 4'b1110;
+   parameter    LP11_STATE = 4'b1000;
+   
+   reg 	o_ana_IN_int_pe;
+   reg 	o_ana_IN_int_ne_retime;
+   reg 	o_ana_IN_int;
+   reg 	o_ana_IN;
+   reg  o_ana_TRISTATE;
+   reg 	TxRequest;   
+   reg  o_ana_TxRequest;   
+
+   reg 	o_ana_HS_LP_DpB_int;
+   reg	o_ana_HS_LP_DnB_int;
+   reg 	o_ana_HS_LP_DpB;
+   reg	o_ana_HS_LP_DnB;
+
+   reg [3:0] cur_state;
+   reg [3:0] next_state;
+   reg [3:0] cur_state_ByteClk;
+   reg [3:0] cur_state_HSCLK; 
+   reg [3:0] o_ana_IN_int_sel;
+ 
+   reg [6:0] term_cnt;
+   reg [6:0] tlpx_state_ctr;
+   reg [3:0] tlpxhs_state_ctr;
+ 
+   reg [7:0] tx_data;
+   reg [7:0] tx_data_buf;
+   
+   reg [2:0] cur_bit;
+   
+   reg 	     r_next_dbit; // Pipelined data out   
+   reg 	     next_bit;   
+   reg 	     next_bit_6;   
+   reg 	     next_bit_7;   
+   reg 	     SOT_STATE_START;   
+   reg 	     Latch_SOT_STATE_START;   
+   reg 	     last_bit;
+
+   reg       isTermCnt0 ;
+   reg       tristate_ByteClk;
+   reg       tristate_HSCLK;
+   reg       tristate_int;
+  
+   reg 	     goto_ns_early;
+   reg 	     goto_next_state;
+   reg 	     goto_next_state_int;
+   reg 	     goto_next_state_int_hs;
+   
+   reg [6:0] Zero_Prepare_Offset;
+   reg [6:0] HS_Prepare_Offset;
+   reg [6:0] LP_Offset;   
+   
+   reg	     sot_bit;
+   reg [2:0] sot_ctr; 
+   reg		latch_tx_data; 
+   wire 	o_TxReadyHS;
+   wire   NotRSTBorCurState2;
+
+   //parameter p_SoT  = 6'b101110;
+   parameter p_SoT  = 8'b00010111;   
+   wire      w_TxReadyHS;
+   
+   assign    o_line_src = ((cur_state == LP01_STATE) | 
+			   (cur_state == LP00_STATE) | 
+			   (cur_state == STOP_STATE) | 
+			   (cur_state == LP11_STATE));
+			   
+/////////////////////////////////////////
+//w_TxReadyHS assignment is modified to delay TxReady assertion by one clock cycle. First Byte of all HS packet was not
+//getting transmitted because of this issue. HS packet with 1-byte payload is also tested with this change.
+// Ref : Bugzilla : Product-agni_gf65lpe, Component-DATA_TX_DIG, Bug-2034
+/////////////////////////////////////////
+   assign    w_TxReadyHS = ((cur_state == HSTX_STATE) | 
+			    (cur_state == SOT_STATE));
+			    
+   //
+   // Arrange for at TM for 1 cycle early assertion to try and ease FPGA timing
+   // somewhat.
+   //
+   assign    o_TxReadyHS = 
+	     i_TM_early_ready ? 
+	     (w_TxReadyHS | ((cur_state == ZERO_STATE) & goto_ns_early)) : 
+	     w_TxReadyHS;   
+					    
+   assign    o_stop_state = (cur_state == STOP_STATE);
+    
+   always @(*)
+     begin
+	next_state = cur_state;   
+	case (cur_state)
+	  INIT_STATE :
+	    if (i_Enable)
+	      next_state = STOP_STATE;
+	  STOP_STATE :
+	    if (TxRequest)
+	      next_state = LP11_STATE;
+	  LP11_STATE :
+	    if (goto_next_state)
+	      next_state = LP01_STATE;
+	  LP01_STATE :
+	    if (goto_next_state)
+	      next_state = LP00_STATE;
+	  LP00_STATE :
+	    if (goto_next_state)
+	      next_state = ZERO_STATE;
+	  ZERO_STATE :
+	    if (goto_next_state)
+	      next_state = SOT_STATE;
+	  SOT_STATE :
+	    next_state = HSTX_STATE;
+	  HSTX_STATE :
+	    if (~TxRequest)
+	      next_state = TRL_STATE;
+	  TRL_STATE :
+	    if (goto_next_state)
+	      next_state = STOP_STATE;	  
+	endcase // case(cur_state)
+     end // always @ (*)
+   
+   // Since the states might have to change on either ByteClk or HSCLK,
+   // there are 2 sets of FFs which latch the state. The combinatorial
+   // part of the SM is the same as described above. Bases on the term_cnt,
+   // the right cur_state will be used. To avoid wrong transition when the 
+   // cur_state transits from HSCLK to ByteClk cur states, a signal isTermCnt0
+   // is generated.
+   
+   always @(posedge TxByteClkHS or negedge RSTB)
+     if (!RSTB)
+       cur_state_ByteClk <= INIT_STATE;  
+     else
+       cur_state_ByteClk <= next_state;
+
+   always @(posedge TxClkHS or negedge RSTB)
+     if (!RSTB)
+       cur_state_HSCLK <= INIT_STATE;  
+     else	  
+       cur_state_HSCLK <= next_state;
+   
+   always@(posedge TxByteClkHS or negedge RSTB)
+     if (!RSTB)
+       isTermCnt0 <= 1'b0;
+     else
+       if (term_cnt == 7'h00)
+	 isTermCnt0 <= 1'b1;
+       else
+	 isTermCnt0 <= 1'b0;  
+   
+   // mux the right cur_state_* to the cur_state based on term_cnt
+   always@(*)
+     begin
+        if (isTermCnt0 == 1'b1 & cur_state_ByteClk != HSTX_STATE & cur_state_HSCLK != HSTX_STATE)
+	  cur_state = cur_state_HSCLK;
+	else
+	  cur_state = cur_state_ByteClk;
+     end	     
+   
+   // This is the counter working on the HSCLK. 
+   // Will be used only when the term_count is 0
+   always @(posedge TxClkHS or negedge RSTB)
+     if (!RSTB)
+       tlpxhs_state_ctr <= 4'b0000;
+     else 
+       begin
+          if (cur_state == INIT_STATE | 
+	      cur_state == STOP_STATE | 
+	      cur_state == HSTX_STATE | 
+	      term_cnt != 7'b0000000 | 
+	      goto_next_state==1)
+	    tlpxhs_state_ctr <= 4'b0000;
+	  else 
+   	    tlpxhs_state_ctr <= tlpxhs_state_ctr + 1'b1;
+       end
+   
+   // This is the counter working on the ByteCLK. 
+   // Will be used only when the term_count != 0
+   always @(posedge TxByteClkHS or negedge RSTB )
+     if (!RSTB)
+       tlpx_state_ctr <= 7'b0000001;
+     else
+       begin
+	  if (tlpx_state_ctr == term_cnt | term_cnt == 7'b0000000)
+	    tlpx_state_ctr <= 7'b0000001;
+	  else 
+	    if (cur_state == INIT_STATE | 
+		cur_state == STOP_STATE | 
+		cur_state == HSTX_STATE)
+	      tlpx_state_ctr <= 7'b0000001;
+	    else 
+	      tlpx_state_ctr <= tlpx_state_ctr + 1'b1;
+       end // else: !if(!RSTB)
+
+   // Generate the goto_next_state_int signal. Could have been combinatorial
+   // as the goto_next_state signals are used synchronously in the SM.
+   always @(posedge TxByteClkHS or negedge RSTB)
+     if (!RSTB)
+       begin
+	  goto_next_state_int <= 1'b0;
+	  goto_ns_early <= 1'b0;
+       end
+     else
+       begin
+	  if ((tlpx_state_ctr == term_cnt) & (goto_next_state_int == 1'b0))
+	    goto_next_state_int <= 1'b1;
+	  else 
+	    goto_next_state_int <= 1'b0;
+	  //
+	  // Allow for early assertion of TxReadyHS using this signal in
+	  // conjunction with the state being HS-ZERO
+	  //
+	  if (
+	      ((tlpx_state_ctr+i_TM_early_offs+7'b1) == term_cnt) & 
+	      (goto_next_state_int == 1'b0)
+	      )
+	    goto_ns_early <= 1'b1;
+	  else 
+	    goto_ns_early <= 1'b0;
+       end
+	  
+   always @(*)
+     begin
+	goto_next_state_int_hs = 1'b0;
+	if (cur_state == LP00_STATE & tlpxhs_state_ctr==4'b1110 & BandCtl==5'b00010) 
+          goto_next_state_int_hs = 1'b1;
+	if (cur_state == LP00_STATE & tlpxhs_state_ctr==4'b1000 & (BandCtl==5'b00001 | BandCtl==5'b00000)) 
+          goto_next_state_int_hs = 1'b1;	  
+	if (cur_state == LP11_STATE & tlpxhs_state_ctr==4'b1000 & (BandCtl==5'b00010 | BandCtl==5'b00000 | BandCtl==5'b00001))
+          goto_next_state_int_hs = 1'b1;	  
+	if (cur_state == LP01_STATE  & tlpxhs_state_ctr==4'b0111)	  
+	  goto_next_state_int_hs = 1'b1;
+	if (cur_state == TRL_STATE  & tlpxhs_state_ctr==4'b1111)	  
+	  goto_next_state_int_hs = 1'b1;
+     end 
+
+   // Depending on the term_cnt, choose the goto_next_state_signal
+   always @(*)
+     begin
+	if (term_cnt == 7'b0000000) 
+       	  goto_next_state = goto_next_state_int_hs;
+	else
+	  goto_next_state = goto_next_state_int;       
+     end
+   
+   // ==========================================================================
+   //
+   // State Machine portion ends here. From here, it is signal generation
+   //
+   // ==========================================================================
+   
+   // The tristate signal to the buffer has to be generated sequentially to 
+   // avoid glitches on it. The logic is same as in LP00 to ZERO state 
+   // transition as the signal has be to deasserted at the start of the ZERO 
+   // state. So the same muck comes in terms of handling the 2 different clock 
+   // domains
+   
+   always @(posedge TxByteClkHS or negedge RSTB )
+     if (!RSTB )
+       tristate_ByteClk <= 1'b1;  
+     else
+       if ((next_state == ZERO_STATE )|(next_state == SOT_STATE )|(next_state == HSTX_STATE )|(next_state == TRL_STATE ) ) 
+	 tristate_ByteClk <= 1'b0;
+       else
+	 tristate_ByteClk <= 1'b1;
+   
+   always @(posedge TxClkHS or negedge RSTB )
+     if (!RSTB )
+       tristate_HSCLK <= 1'b1;  
+     else	  
+       if ((next_state == ZERO_STATE )|(next_state == SOT_STATE )|(next_state == HSTX_STATE )|(next_state == TRL_STATE ) ) 
+	 tristate_HSCLK <= 1'b0;
+       else
+	 tristate_HSCLK <= 1'b1;
+   
+   // mux the right tristate_* to the tristate based on term_cnt
+   always@(*)
+     if( isTermCnt0 == 1'b1)
+       tristate_int = tristate_HSCLK ;
+     else
+       tristate_int = tristate_ByteClk  ;
+ 
+   // ==========================================================================
+   // 
+   // ==========================================================================
+
+   always @(*)
+     begin	
+	o_ana_HS_LP_DpB_int = 1'b1;
+	o_ana_HS_LP_DnB_int = 1'b1;
+	case (cur_state)
+          LP11_STATE :
+            begin
+               o_ana_HS_LP_DpB_int = 1'b0;
+               o_ana_HS_LP_DnB_int = 1'b0;
+            end	  
+	  LP00_STATE :
+	    begin
+	       o_ana_HS_LP_DpB_int = 1'b1;
+	       o_ana_HS_LP_DnB_int = 1'b1;
+	    end
+	  LP01_STATE :
+	    begin
+	       o_ana_HS_LP_DpB_int = 1'b1;
+	       o_ana_HS_LP_DnB_int = 1'b0;
+	    end
+	  TRL_STATE,STOP_STATE :
+	    begin
+	       o_ana_HS_LP_DpB_int = 1'b0;
+	       o_ana_HS_LP_DnB_int = 1'b0;
+	    end
+	endcase // case(cur_state)
+	if(test_sel_ana_HS_LP_D == 1 ) 
+	  begin
+             o_ana_HS_LP_DpB = test_ana_HS_LP_DpB;
+             o_ana_HS_LP_DnB = test_ana_HS_LP_DnB;	  
+	  end
+	else
+	  begin
+             o_ana_HS_LP_DpB = o_ana_HS_LP_DpB_int;
+             o_ana_HS_LP_DnB = o_ana_HS_LP_DnB_int;	  
+	  end       	
+     end // always @ (*)   
+   //
+   // This depends on the state encoding .. be afraid ... be very afraid.
+   //
+   assign NotRSTBorCurState2 = 
+	  !RSTB || ((cur_state[2] == 1'b0)&~test_sel_HSTX_data);
+ 
+/////////////////////////////////////////
+//last_bit reg used in o_ana_IN_int_pe assignment during TRL_STATE is modified to correct the polarity of trailing bit during HS_TRAIL state.
+//Ref : Bugzilla : Product-agni_gf65lpe, Component-DATA_TX_DIG, Bug-2033
+/////////////////////////////////////////
+   always @(posedge TxClkHS or posedge NotRSTBorCurState2)
+     if (NotRSTBorCurState2)
+       begin 
+	  o_ana_IN_int_pe <= 1'b0;
+	  o_ana_IN_int_sel[3:0] <= 4'b0000;
+       end	  
+     else
+       begin
+	  if (next_bit_6 == 1'b1) 
+	    o_ana_IN_int_sel[3:0] <= next_state[3:0];
+	  case(o_ana_IN_int_sel[3:0]) 
+	    {ZERO_STATE} : o_ana_IN_int_pe <= 1'b0;
+	    {STOP_STATE} : o_ana_IN_int_pe <= 1'b0;
+	    {SOT_STATE}  : o_ana_IN_int_pe <= sot_bit;
+	    {HSTX_STATE} : o_ana_IN_int_pe <= r_next_dbit;
+	    {TRL_STATE}  : o_ana_IN_int_pe <= last_bit;
+	    default : o_ana_IN_int_pe <= last_bit;
+	  endcase // case(o_ana_IN_int_sel)	  
+       end // else: !if(NotRSTBorCurState2)   
+
+// Check for timing issue  here. cur_state is generated on ByteClk and needs to be right on the next HSCLK.
+// Due to timing constraints when checking cur_state == SOT_STATE, generated a signal
+// SOT_STATE_START which goes high  on the first HSCLK of the SOT STATE.
+// This helps in timign as there is no decoding based on cur_state 
+//	  if (cur_state == SOT_STATE)
+
+   always @(posedge TxClkHS or negedge RSTB)
+     if (!RSTB)
+       begin 
+	  sot_bit <= 1'b0;
+	  sot_ctr <= 3'b0;
+       end	  
+     else
+       begin
+          if (SOT_STATE_START)
+	    begin
+	       sot_bit <= p_SoT[sot_ctr];
+	       //if (sot_ctr < 5)
+		 sot_ctr <= sot_ctr + 1;
+	    end
+	  else
+	    begin
+	       sot_ctr <= 3'b0;
+	       sot_bit <= 1'b0;
+	    end 	      
+       end // else: !if(!RSTB)   
+ 
+   always @(negedge TxClkHS or negedge RSTB)
+     if (!RSTB)
+       begin
+	  o_ana_IN_int <= 1'b0;	 
+	  o_ana_IN_int_ne_retime <= 1'b0;
+       end
+     else      
+       begin
+	  o_ana_IN_int_ne_retime <= o_ana_IN_int_pe;	  
+	  // Implement the swap in this re-timing step
+	  if (i_SwapDpDn)	 
+	    o_ana_IN_int <= ~o_ana_IN_int_ne_retime;
+	  else
+     	    o_ana_IN_int <= o_ana_IN_int_ne_retime;
+       end
+   always @(*)
+     o_ana_IN = o_ana_IN_int;     	   	  
+ 
+   always @(posedge TxClkHS or negedge RSTB)
+     if (!RSTB)
+       Latch_SOT_STATE_START <= 1'b0;
+     else
+       if( (cur_state == ZERO_STATE) & (goto_next_state == 1'b1)  & (SOT_STATE_START == 1'b0) ) 
+	 Latch_SOT_STATE_START <= next_bit_7;
+       else
+	 Latch_SOT_STATE_START <= 1'b0;
+	      
+   always @(posedge TxClkHS or negedge RSTB)
+     if (!RSTB)
+       begin
+	  cur_bit <= 3'b010;
+	  next_bit <= 1'b0;
+	  next_bit_6 <= 1'b0;
+	  SOT_STATE_START <= 1'b0;
+	  next_bit_7 <= 1'b0;	  
+       end
+     else
+       begin
+//	  if (cur_state == SOT_STATE || cur_state == HSTX_STATE || next_state == SOT_STATE || test_force_HSTX)
+//  Hack for speed and logic
+//          if( cur_state[2] == 1'b1 )
+// Generation of start_cur_bit_cnt is to pipeline the  delay in generation of
+// cur_state[2] == 1'b1 out. 
+
+//	 if( start_cur_bit_cnt == 1'b1 )
+// Have to use cur_state_ByteClk as it is gauranteed to be synch to Byteclk. So in case band ctrl is 2 or low
+// the counter will still start on ByteClk boundaries. 
+	  if (cur_state_ByteClk[2] == 1'b1)
+	    cur_bit <= cur_bit + 1; 
+	  if (Latch_SOT_STATE_START) 
+	    SOT_STATE_START <= next_bit;
+	  else  
+	    if (cur_state == STOP_STATE)
+	      SOT_STATE_START <= 1'b0;
+	  next_bit_6 <= (cur_bit == 6);	  
+	  next_bit_7 <= next_bit_6;
+	  next_bit <= next_bit_7;
+       end
+
+   always @(posedge TxByteClkHS or negedge RSTB )
+     if (!RSTB)
+       tx_data_buf <= 8'h00;  
+     else
+       if (test_sel_HSTX_data)
+	 tx_data_buf <= test_force_HSTX_bits;
+       else
+	 tx_data_buf <= i_TxDataHS;    
+
+/////////////////////////////////////////
+//last_bit generation logic modified in following always block, to correct the polarity of trailing bit during HS_TRAIL.
+//Ref : Bugzilla : Product-agni_gf65lpe, Component-DATA_TX_DIG, Bug-2033
+/////////////////////////////////////////
+   always @(posedge TxClkHS or negedge RSTB)
+     if (!RSTB)
+       begin
+	  tx_data <= 8'b0;
+	  last_bit <= 1'b0;	
+	  latch_tx_data <= 1'b0; 
+	  r_next_dbit <= 1'b0;	  
+       end
+     else       
+       begin
+          if ((next_state != TRL_STATE) && (cur_bit == 6) && (cur_state != TRL_STATE))
+	    latch_tx_data <=1'b1;
+	  else
+	    latch_tx_data <= 1'b0;	
+	  //if ((next_state != TRL_STATE) && (cur_bit == 7) && (cur_state != TRL_STATE))
+	  if(latch_tx_data)
+	    begin
+	       tx_data <= tx_data_buf;
+	       r_next_dbit <= tx_data_buf[0];
+	    end	       
+	  else 
+	    // Note that this automatically gets filled with the correct value due to T_CLK_PREPARE
+	    begin
+	       tx_data <= {1'b1,tx_data[7:1]};
+	       r_next_dbit <= tx_data[1];
+	    end
+	  if (o_ana_IN_int_sel[3:0] == HSTX_STATE)
+	       last_bit <= !r_next_dbit;
+       end // else: !if(!RSTB)   
+
+   //  TxRequest signal generation
+   always @(posedge TxByteClkHS or negedge RSTB )
+     if (!RSTB)
+       begin
+	  TxRequest <= 1'b0;
+	  o_ana_TxRequest <= 1'b0;
+       end	 
+     else
+       begin	  
+	  if (cur_state == STOP_STATE | 
+	      cur_state == SOT_STATE | 
+	      cur_state == HSTX_STATE)
+	    // The above condition ensures that transition on i_TxRequestHS is 
+	    // captured only on these states
+	    TxRequest <= i_TxRequestHS;	  
+	  if (test_sel_ana_IN)
+	    o_ana_TxRequest <= test_sel_ana_IN;
+	  else
+	    o_ana_TxRequest <= ((M_StopState | cur_state == HSTX_STATE) & 
+				i_TxRequestHS) |
+			       TxRequest |
+			       (next_state == HSTX_STATE) | 
+			       (next_state == TRL_STATE);
+       end // else: !if(!RSTB)
+ 
+   // Removed test mode bypass as it is implemented in the analog section
+   // Ana. control bits are in TBIT4[1:0]
+   always @(*)
+     if (test_sel_ana_IN)
+       o_ana_TRISTATE = 1'b0;
+     else
+       o_ana_TRISTATE = tristate_int;
+      
+   // ==========================================================================
+   //
+   // Signal generation ends here. Define term_cnt based on states and BandCtl
+   //
+   // ==========================================================================
+        
+   always @(*)
+     begin      
+	LP_Offset[6:0] = {{3{i_LP_Cnt_Offset[3]}},i_LP_Cnt_Offset[3:0]};
+	HS_Prepare_Offset[6:0] = {{3{i_HS_Prpr_Offset[3]}},
+				  i_HS_Prpr_Offset[3:0]};
+	Zero_Prepare_Offset[6:0] = {{3{i_Zero_Prpr_Offset[3]}},
+				    i_Zero_Prpr_Offset[3:0]};	
+     end
+   
+   always @(*)
+     begin
+   	case (cur_state)
+	  INIT_STATE,STOP_STATE,LP01_STATE,LP11_STATE :
+	    begin
+	       case (BandCtl)
+		 5'b10010 :  term_cnt = 7'h09 + LP_Offset;	    
+		 5'b10001 :  term_cnt = 7'h09 + LP_Offset;	    
+		 5'b10000 :  term_cnt = 7'h08 + LP_Offset;	    
+		 5'b01111 :  term_cnt = 7'h07 + LP_Offset;	    
+		 5'b01110 :  term_cnt = 7'h07 + LP_Offset; 
+		 5'b01101 :  term_cnt = 7'h06 + LP_Offset;
+		 5'b01100 :  term_cnt = 7'h05 + LP_Offset;
+		 5'b01011 :  term_cnt = 7'h05 + LP_Offset;
+		 5'b01010 :  term_cnt = 7'h04 + LP_Offset;
+		 5'b01001 :  term_cnt = 7'h04 + LP_Offset;
+		 5'b01000 :  term_cnt = 7'h04 + LP_Offset;
+		 5'b00111 :  term_cnt = 7'h03 + LP_Offset;
+		 5'b00110 :  term_cnt = 7'h03 + LP_Offset;
+		 5'b00101 :  term_cnt = 7'h02 + LP_Offset;
+		 5'b00100 :  term_cnt = 7'h02 + LP_Offset;
+		 5'b00011 :  term_cnt = 7'h02 + LP_Offset;
+		 5'b00010 :  term_cnt = 7'h00;
+		 5'b000001 :  term_cnt = 7'h00;
+		 default :  term_cnt = 7'h00;	  
+	       endcase // case(BandCtl)	       
+	    end // case: INIT_STATE,STOP_STATE,LP01_STATE	  
+	  LP00_STATE : // HS-PREPARE
+	    begin
+	       case (BandCtl)
+		 5'b10010 :  term_cnt = 7'h0a + HS_Prepare_Offset;
+		 5'b10001 :  term_cnt = 7'h09 + HS_Prepare_Offset;
+		 5'b10000 :  term_cnt = 7'h08 + HS_Prepare_Offset;
+		 5'b01111 :  term_cnt = 7'h07 + HS_Prepare_Offset;
+		 5'b01110 :  term_cnt = 7'h06 + HS_Prepare_Offset;
+		 5'b01101 :  term_cnt = 7'h06 + HS_Prepare_Offset;
+		 5'b01100 :  term_cnt = 7'h05 + HS_Prepare_Offset;
+		 5'b01011 :  term_cnt = 7'h05 + HS_Prepare_Offset;
+		 5'b01010 :  term_cnt = 7'h04 + HS_Prepare_Offset;
+		 5'b01001 :  term_cnt = 7'h04 + HS_Prepare_Offset;
+		 5'b01000 :  term_cnt = 7'h04 + HS_Prepare_Offset;
+		 5'b00111 :  term_cnt = 7'h03 + HS_Prepare_Offset;
+		 5'b00110 :  term_cnt = 7'h03 + HS_Prepare_Offset;
+		 5'b00101 :  term_cnt = 7'h03 + HS_Prepare_Offset;
+		 // This needs to be one less than in the XLS
+		 5'b00100 :  term_cnt = 7'h02 + HS_Prepare_Offset; 
+		 5'b00011 :  term_cnt = 7'h02 + HS_Prepare_Offset;
+		 5'b00010 :  term_cnt = 7'h00 ;
+		 5'b00001 :  term_cnt = 7'h00;
+		 default :  term_cnt = 7'h00;
+	       endcase // case(BandCtl)	       
+	    end // case: LP00_STATE	  
+	  ZERO_STATE :
+	    begin
+	       case (BandCtl)
+		 5'b10010 :  term_cnt = 7'h15 + Zero_Prepare_Offset;
+		 5'b10001 :  term_cnt = 7'h15 + Zero_Prepare_Offset;
+		 5'b10000 :  term_cnt = 7'h12 + Zero_Prepare_Offset;
+		 5'b01111 :  term_cnt = 7'h0e + Zero_Prepare_Offset;
+		 5'b01110 :  term_cnt = 7'h0e + Zero_Prepare_Offset;
+		 5'b01101 :  term_cnt = 7'h0c + Zero_Prepare_Offset;
+		 5'b01100 :  term_cnt = 7'h0c + Zero_Prepare_Offset;
+		 5'b01011 :  term_cnt = 7'h0a + Zero_Prepare_Offset;
+		 5'b01010 :  term_cnt = 7'h0a + Zero_Prepare_Offset;
+		 5'b01001 :  term_cnt = 7'h09 + Zero_Prepare_Offset;
+		 5'b01000 :  term_cnt = 7'h08 + Zero_Prepare_Offset;
+		 5'b00111 :  term_cnt = 7'h08 + Zero_Prepare_Offset;
+		 5'b00110 :  term_cnt = 7'h07 + Zero_Prepare_Offset;
+		 5'b00101 :  term_cnt = 7'h07 + Zero_Prepare_Offset;
+		 5'b00100 :  term_cnt = 7'h05 + Zero_Prepare_Offset;
+		 5'b00011 :  term_cnt = 7'h04 + Zero_Prepare_Offset;
+		 5'b00010 :  term_cnt = 7'h03 + Zero_Prepare_Offset;
+		 5'b00001 :  term_cnt = 7'h03 + Zero_Prepare_Offset;
+		 default :  term_cnt = 7'h03 + Zero_Prepare_Offset;	    
+	       endcase // case(BandCtl)	       
+	    end // case: ZERO_STATE	  
+	  //	  HSTX_STATE :
+	  //	  TRL_STATE :
+	  default :
+	    begin
+	       //	  term_cnt = 7'h06;
+	       case (BandCtl)
+		 5'b10010 :  term_cnt = 7'h0b;
+		 5'b10001 :  term_cnt = 7'h0a;
+		 5'b10000 :  term_cnt = 7'h09;
+		 5'b01111 :  term_cnt = 7'h07;
+		 5'b01110 :  term_cnt = 7'h07;
+		 5'b01101 :  term_cnt = 7'h06;
+		 5'b01100 :  term_cnt = 7'h06;
+		 5'b01011 :  term_cnt = 7'h05;
+		 5'b01010 :  term_cnt = 7'h05;
+		 5'b01001 :  term_cnt = 7'h04;
+		 5'b01000 :  term_cnt = 7'h04;
+		 5'b00111 :  term_cnt = 7'h03;
+		 5'b00110 :  term_cnt = 7'h03;
+		 5'b00101 :  term_cnt = 7'h02;
+		 5'b00100 :  term_cnt = 7'h02;
+		 5'b00011 :  term_cnt = 7'h00;
+		 5'b00010 :  term_cnt = 7'h00;
+		 5'b00001 :  term_cnt = 7'h00;
+		 default :  term_cnt = 7'h00;
+	       endcase // case(BandCtl)	       
+	    end // case: default	  
+	endcase // case(cur_state)
+     end // always @(*)   
+   // pragma protect end
+endmodule // data_hs_m
